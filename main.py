@@ -7,20 +7,8 @@ import os
 from pprint import pprint
 import midi
 import numpy as np
+import animation
 
-width=1920
-height=1080
-os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (0,0)
-scr = pygame.display.set_mode((width,height))
-white = (255,255,255)
-black = (0,0,0)
-
-
-def keyQuit(loop):
-	for e in pygame.event.get():
-		if e.type == KEYDOWN and e.key == K_q:
-			loop=1
-	return loop
 
 def makeXYofT(func1,func2):
 	def xYofT(t):
@@ -85,30 +73,6 @@ def genericXYatT():
 	yOft=makeXYofT(baseFunc,baseFunc3)
 	return makeXYatT(xOft,yOft)
 
-def getScreenPos(pos):
-	(x,y) = pos
-	w2 = width/2
-	h2 = height/2
-	scaling=400
-	return (x*scaling+w2,y*scaling+h2)
-
-def mirrorX(pos):
-	(x,y) = pos
-	w2 = width/2
-	h2 = height/2
-	return ((w2-x)+w2,y)
-
-def mirrorY(pos):
-	(x,y) = pos
-	w2 = width/2
-	h2 = height/2
-	return (x,(h2-y)+h2)
-
-def invert(pos):
-	(x,y) = pos
-	w2 = width/2
-	h2 = height/2
-	return ((w2-x)+w2,(h2-y)+h2)
 
 def makeNoteFactory(duration_in_samples, sample_rate,amplitude,damping):
 	def makeNote(frequency):
@@ -121,7 +85,6 @@ def makeHarmonicNoteFromFunc(sample_rate,duration_in_samples):
 	for t in xrange(0, duration_in_samples):
 		a.append(func(t))
 	return np.int16(np.array(a))
-
 
 
 def harmonograph():
@@ -147,59 +110,17 @@ def harmonograph():
 	s = pygame.sndarray.make_sound(hNote)
 	sound = pygame.mixer.Sound(s)
 	
-	pygame.mixer.Sound.play(sound)
-	pygame.mixer.Sound.play(sound2)
+	# pygame.mixer.Sound.play(sound)
+	# pygame.mixer.Sound.play(sound2)
+
+	my_animation = animation.animation(hFunc)
+	my_animation.start()
 
 	
-	loop=0
-	
-	dotResolution =  1/ 10000.0
-	dotsPerFrame = 2500
-
-	def draw(i):
-		maxZ = 2500
-		for z in range(0,maxZ):
-			q =  (i/4.0) + (z / 10000.0)
-			(x1,y1) = getScreenPos(hFunc(q))
-			(x,y) = (int(x1),int(y1))
-			print (q,x1,y1,x,y)
-			pygame.draw.circle(scr,(255,255,255),(x,y),1,1)
-	def draw2(i):
-		maxZ = 500
-		for z in range(0,maxZ):
-			q =  (i/4.0) + (z / 2000.0)
-			(x1,y1) = getScreenPos(hFunc(q))
-			(x,y) = (int(x1),int(y1))
-			# print (i,x1,y1,x,y)
-			pygame.draw.circle(scr,(255,255,255),(x,y),1,1)
-
-	i=0
-	screen=scr.copy()
-	while not loop:
-		scr.fill((0,0,0))
-		if (screen):
-			screen.set_alpha(50)
-			scr.blit(screen,(0,0))	
-		draw2(i)
-		
-		i+=1
-		pygame.display.flip()
-		screen=scr.copy()
-		pygame.time.wait(2)
-		loop = keyQuit(loop)
-
-	
-
-
-
 
 
 def main():
-	#used in all
 	# pygame.mouse.set_visible(0)
-
 	harmonograph()
 
-	
-	
 main()
