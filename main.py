@@ -10,9 +10,9 @@ import numpy as np
 import animation
 import noteFrequencies
 
-def hEquation(amplitude, frequency, phase, damping, sample_rate):
+def hEquation(amplitude, frequency, phase, damping):
 	def hFunc(time):
-		val = amplitude*math.sin(2*math.pi*frequency*time/sample_rate + float(phase))*math.pow(math.e,(-1*damping*time/sample_rate))
+		val = amplitude*math.sin(2*math.pi*frequency*time + float(phase))*math.pow(math.e,(-1*damping*time))
 		return val
 	return hFunc
 
@@ -26,7 +26,7 @@ def makeXYatT(func1,func2):
 		return (func1(t),func2(t))
 	return XYatT
 
-def harmonicXYatT(freqX,freqY, amplitude, damping, sample_rate):
+def harmonicXYatT(freqX,freqY, amplitude, damping):
 	ratio1 = 0.0
 	ratio2 = 0.0
 	freqS1 = ratio1 * freqX
@@ -35,10 +35,10 @@ def harmonicXYatT(freqX,freqY, amplitude, damping, sample_rate):
 	ampS2 = amplitude
 	ampX = amplitude
 	ampY = amplitude
-	baseFuncS1 = hEquation(ampS1,freqS1, 0,damping, sample_rate)
-	baseFuncX = hEquation(ampS2,freqX, 0,damping, sample_rate)
-	baseFuncS2 = hEquation(ampX,freqS1, 0,damping, sample_rate)
-	baseFuncY = hEquation(ampY,freqY, 0,damping, sample_rate)
+	baseFuncS1 = hEquation(ampS1, freqS1, 0, damping)
+	baseFuncX = hEquation(ampS2, freqX, 0, damping)
+	baseFuncS2 = hEquation(ampX, freqS1, 0, damping)
+	baseFuncY = hEquation(ampY, freqY, 0, damping)
 	xOft=makeXYofT(baseFuncS1,baseFuncX)
 	yOft=makeXYofT(baseFuncS2,baseFuncY)
 	return makeXYatT(xOft,yOft)
@@ -51,19 +51,18 @@ def makeNoteFactory(duration_in_samples, sample_rate,amplitude,damping):
 		return np.int16(np.array([amplitude*math.sin(2.0 * math.pi * frequency * t / sample_rate)*math.pow(math.e,(-1*damping*(t/sample_rate))) for t in xrange(0, duration_in_samples)]))
 	return makeNote
 
-
 def harmonograph():
 	notes = noteFrequencies.noteFrequencies()
 	
 	freqX=notes.get('c4','just')
-	freqY=notes.get('g4','just')
+	freqY=notes.get('e4','just')
 
-	duration_in_samples = 400000
+	duration_in_samples = 900000
 	sample_rate = 44100.0
 	amplitude = 1000
-	damping = 0.01
+	damping = 0.2
 
-	hFunc = harmonicXYatT(freqX,freqY,amplitude, damping, sample_rate)
+	hFunc = harmonicXYatT(freqX,freqY,amplitude, damping)
 
 	pygame.mixer.pre_init(int(sample_rate), -16, 1, 4096)
 	pygame.mixer.init()
@@ -73,20 +72,17 @@ def harmonograph():
 	noteAsndarray = pygame.sndarray.make_sound(noteA)
 	noteAsound = pygame.mixer.Sound(noteAsndarray)
 
-	noteB = makeNote(freqX)
+	noteB = makeNote(freqY)
 	noteBsndarray = pygame.sndarray.make_sound(noteB)
 	noteBsound = pygame.mixer.Sound(noteBsndarray)
 	
 	pygame.mixer.Sound.play(noteAsound)
 	pygame.mixer.Sound.play(noteBsound)
 
-	
 	my_animation = animation.animation(hFunc)
 	my_animation.start()
 
 	
-
-
 def main():
 	harmonograph()
 main()
